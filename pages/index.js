@@ -3,6 +3,27 @@ import Layout from '../components/Layout';
 import image from "../public/image.png";
 import image2 from "../public/image2.png";
 
+ const normalizeNumber = (value) => {
+  // Étape 1 : Multiplier par 100000 (décalage décimal)
+  let result = value * 100000;
+  result = Math.round(result);
+  // Étape 2 : Diviser par 10 (pour obtenir la première troncature)
+  result = result / 10;
+  // Étape 3 : Arrondir à l'entier le plus proche
+  result = Math.round(result);
+  // Étape 4 : Diviser par 10 (nouvelle troncature)
+  result = result / 10;
+  // Étape 5 : Arrondir à l'entier le plus proche
+  result = Math.round(result);
+  // Étape 6 : Diviser par 10 (encore une troncature)
+  result = result / 10;
+  // Étape 7 : Arrondir à l'entier le plus proche
+  result = Math.round(result);
+  
+  result = result / 100;
+  return result;
+};
+
 export default function Home() {
   // Consolidated state
   const [formData, setFormData] = useState({
@@ -38,10 +59,12 @@ export default function Home() {
     const A11 = (autoEntry + (autoL1Entry * 3)) / 4;
     const A12 = (autoEntry + (autoL1Entry * 3) + (autoL2Entry * 5)) / 9;
 
-    // Position sizing
+    const A12LessAutoSlCalc = Math.round((A12 - autoSl) * 100) / 100; // 1.19
     const D8 = direction === 'long'
-      ? riskReward / (A12 - autoSl)
+      ? riskReward / normalizeNumber(A12 - autoSl)
       : riskReward / (autoSl - A12);
+
+ 
     const E8 = direction === 'long'
       ? autoTp - autoEntry
       : autoEntry - autoTp;
@@ -51,9 +74,11 @@ export default function Home() {
 
     // Quantities
     const autoQty = D8 / 9;
-    const autoQtyPercentage = E8 / autoEntry * 100;
+    const autoQtyPercentage = normalizeNumber(E8 / autoEntry * 100);
     const autoL1Qty = autoQty * 3;
     const autoL2Qty = autoQty * 5;
+
+    console.log('autoQtyPercentage ==> ', E8 / autoEntry * 100,normalizeNumber(E8 / autoEntry * 100))
 
     // Take profit levels
     const autoL1Tp = direction === 'long'
@@ -64,6 +89,7 @@ export default function Home() {
       ? A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12)
       : A12 - ((autoQtyPercentage / 100 / MANAGE_2) * A12);
 
+console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12))
     // Margin calculation
     const margin = ((A12 * I12) / ((accountSize * leverage) * 0.6)) * 100;
 
@@ -108,7 +134,8 @@ export default function Home() {
       L2Profit: L2Profit.toFixed(2),
       entryProfitPercentage: entryProfitPercentage.toFixed(2),
       L1ProfitPercentage: L1ProfitPercentage.toFixed(2),
-      L2ProfitPercentage: L2ProfitPercentage.toFixed(2)
+      L2ProfitPercentage: L2ProfitPercentage.toFixed(2),
+      A12LessAutoSlCalc: A12LessAutoSlCalc.toFixed(2)
     };
   }, [formData]);
 
@@ -302,6 +329,7 @@ export default function Home() {
             E8: {calculations.E8} <br />
             I11: {calculations.I11} <br />
             I12: {calculations.I12} <br />
+            A12LessAutoSlCalc: {calculations.A12LessAutoSlCalc} <br />
           </div>
         </div>
       </div>
