@@ -1,0 +1,63 @@
+//@version=6
+indicator("Alert Master - Support & Resistance", overlay=true, max_lines_count=500, max_labels_count=500)
+
+// ───────────────
+// Inputs : niveaux et options
+supportPrice    = input.price(30000.0, "Support", confirm=true)
+resistancePrice = input.price(35000.0, "Résistance", confirm=true)
+showLines       = input.bool(true, "Afficher les lignes")
+showLabels      = input.bool(true, "Afficher les labels")
+
+// ───────────────
+// Tracer lignes horizontales si demandé
+var line supLine = na
+var line resLine = na
+
+if showLines
+    if na(supLine)
+        supLine := line.new(bar_index, supportPrice, bar_index+1, supportPrice, color=color.green, width=2)
+    else
+        line.set_xy1(supLine, bar_index, supportPrice)
+        line.set_xy2(supLine, bar_index+1, supportPrice)
+
+    if na(resLine)
+        resLine := line.new(bar_index, resistancePrice, bar_index+1, resistancePrice, color=color.red, width=2)
+    else
+        line.set_xy1(resLine, bar_index, resistancePrice)
+        line.set_xy2(resLine, bar_index+1, resistancePrice)
+else
+    if not na(supLine)
+        line.delete(supLine)
+        supLine := na
+    if not na(resLine)
+        line.delete(resLine)
+        resLine := na
+
+// ───────────────
+// Afficher labels si demandé
+var label supLabel = na
+var label resLabel = na
+
+if showLabels
+    if na(supLabel)
+        supLabel := label.new(bar_index, supportPrice, "Support: " + str.tostring(supportPrice), style=label.style_label_left, color=color.green, textcolor=color.white)
+    else
+        label.set_xy(supLabel, bar_index, supportPrice)
+        label.set_text(supLabel, "Support: " + str.tostring(supportPrice))
+
+    if na(resLabel)
+        resLabel := label.new(bar_index, resistancePrice, "Résistance: " + str.tostring(resistancePrice), style=label.style_label_left, color=color.red, textcolor=color.white)
+    else
+        label.set_xy(resLabel, bar_index, resistancePrice)
+        label.set_text(resLabel, "Résistance: " + str.tostring(resistancePrice))
+else
+    if not na(supLabel)
+        label.delete(supLabel)
+        supLabel := na
+    if not na(resLabel)
+        label.delete(resLabel)
+        resLabel := na
+
+// ───────────────
+// Alertes webhook persistantes
+alertcondition(true, title="Send Support & Resistance", message="{\"support_price\": {{supportPrice}}, \"resistance_price\": {{resistancePrice}}}")
