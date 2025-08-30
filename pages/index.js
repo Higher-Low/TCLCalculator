@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import CopyButton from '../components/copyButton';
 import Layout from '../components/Layout';
 import image from "../public/image.png";
 import image2 from "../public/image2.png";
 
- const normalizeNumber = (value) => {
+const normalizeNumber = (value) => {
   // Étape 1 : Multiplier par 100000 (décalage décimal)
   let result = value * 100000;
   result = Math.round(result);
@@ -19,7 +20,7 @@ import image2 from "../public/image2.png";
   result = result / 10;
   // Étape 7 : Arrondir à l'entier le plus proche
   result = Math.round(result);
-  
+
   result = result / 100;
   return result;
 };
@@ -64,7 +65,7 @@ export default function Home() {
       ? riskReward / normalizeNumber(A12 - autoSl)
       : riskReward / (autoSl - A12);
 
- 
+
     const E8 = direction === 'long'
       ? autoTp - autoEntry
       : autoEntry - autoTp;
@@ -78,7 +79,7 @@ export default function Home() {
     const autoL1Qty = autoQty * 3;
     const autoL2Qty = autoQty * 5;
 
-    console.log('autoQtyPercentage ==> ', E8 / autoEntry * 100,normalizeNumber(E8 / autoEntry * 100))
+    console.log('autoQtyPercentage ==> ', E8 / autoEntry * 100, normalizeNumber(E8 / autoEntry * 100))
 
     // Take profit levels
     const autoL1Tp = direction === 'long'
@@ -89,7 +90,7 @@ export default function Home() {
       ? A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12)
       : A12 - ((autoQtyPercentage / 100 / MANAGE_2) * A12);
 
-console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12))
+    console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12))
     // Margin calculation
     const margin = ((A12 * I12) / ((accountSize * leverage) * 0.6)) * 100;
 
@@ -254,28 +255,28 @@ console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPe
             <div className='positions-header'>Profit %</div>
 
             <div className='positions-title'>Entry</div>
-            <div>{calculations.autoEntry}</div>
-            <div>{calculations.autoQty}</div>
-            <div>{calculations.autoTp}</div>
+            <div>{calculations.autoEntry} <CopyButton value={calculations.autoEntry} /></div>
+            <div>{calculations.autoQty} <CopyButton value={calculations.autoQty} /></div>
+            <div>{calculations.autoTp} <CopyButton value={calculations.autoTp} /></div>
             <div>{calculations.entryProfit}</div>
             <div>{calculations.entryProfitPercentage}%</div>
 
             <div className='positions-title'>L1</div>
-            <div>{calculations.autoL1Entry}</div>
-            <div>{calculations.autoL1Qty}</div>
-            <div>{calculations.autoL1Tp}</div>
+            <div>{calculations.autoL1Entry} <CopyButton value={calculations.autoL1Entry} /></div>
+            <div>{calculations.autoL1Qty} <CopyButton value={calculations.autoL1Qty} /></div>
+            <div>{calculations.autoL1Tp} <CopyButton value={calculations.autoL1Tp} /></div>
             <div>{calculations.L1Profit}</div>
             <div>{calculations.L1ProfitPercentage}%</div>
 
             <div className='positions-title'>L2</div>
-            <div>{calculations.autoL2Entry}</div>
-            <div>{calculations.autoL2Qty}</div>
-            <div>{calculations.autoL2Tp}</div>
+            <div>{calculations.autoL2Entry} <CopyButton value={calculations.autoL2Entry} /></div>
+            <div>{calculations.autoL2Qty} <CopyButton value={calculations.autoL2Qty} /></div>
+            <div>{calculations.autoL2Tp} <CopyButton value={calculations.autoL2Tp} /></div>
             <div>{calculations.L2Profit}</div>
             <div>{calculations.L2ProfitPercentage}%</div>
 
             <div className='positions-title'>SL</div>
-            <div>{calculations.autoSl}</div>
+            <div>{calculations.autoSl} <CopyButton value={calculations.autoSl} /></div>
             <div>{calculations.D8}</div>
             <div></div>
             <div>{-calculations.riskReward}</div>
