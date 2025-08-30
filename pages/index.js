@@ -1,212 +1,191 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Layout from '../components/Layout';
 import image from "../public/image.png";
 import image2 from "../public/image2.png";
 
 export default function Home() {
-  const [direction, setDirection] = useState('long');
-  const [accountSize, setAccountSize] = useState(1000);
+  // Consolidated state
+  const [formData, setFormData] = useState({
+    direction: 'long',
+    accountSize: 1000,
+    risk: 50,
+    leverage: 50,
+    high: 203.93,
+    low: 200.45
+  });
 
-  console.log(image);
+  // Constants
+  const MANAGE_1 = 4;
+  const MANAGE_2 = 6;
 
+  // Memoized calculations
+  const calculations = useMemo(() => {
+    const { direction, accountSize, risk, leverage, high, low } = formData;
 
-  const [risk, setRisk] = useState(50);
-  const [leverage, setLeverage] = useState(50);
-  const [riskReward, setRiskReward] = useState('');
-  const [margin, setMargin] = useState('');
+    const riskReward = risk * accountSize / 100;
+    const range = high - low;
 
-  const [A11, setA11] = useState('');
-  const [A12, setA12] = useState('');
-  const [D8, setD8] = useState('');
-  const [E8, setE8] = useState('');
-  const [I11, setI11] = useState('');
-  const [I12, setI12] = useState('');
+    // Entry points
+    const autoEntry = (range * 0.618) + low;
+    const autoL1Entry = (range * 0.382) + low;
+    const autoL2Entry = (range * 0.17) + low;
 
-  const [high, setHigh] = useState(203.93);
-  const [low, setLow] = useState(200.45);
+    // Take profit and stop loss
+    const autoTp = (range * 1.272) + low;
+    const autoSl = (range * -0.05) + low;
 
-  const [autoEntry, setAutoEntry] = useState('');
-  const [autoTp, setAutoTp] = useState('');
-  const [autoSl, setAutoSl] = useState('');
-  const [autoQty, setAutoQty] = useState('');
-  const [autoQtyPercentage, setAutoQtyPercentage] = useState('');
+    // Weighted averages
+    const A11 = (autoEntry + (autoL1Entry * 3)) / 4;
+    const A12 = (autoEntry + (autoL1Entry * 3) + (autoL2Entry * 5)) / 9;
 
-  const [autoL1Entry, setAutoL1Entry] = useState('');
-  const [autoL1Tp, setAutoL1Tp] = useState('');
-  const [autoL1Qty, setAutoL1Qty] = useState('');
+    // Position sizing
+    const D8 = direction === 'long'
+      ? riskReward / (A12 - autoSl)
+      : riskReward / (autoSl - A12);
+    const E8 = direction === 'long'
+      ? autoTp - autoEntry
+      : autoEntry - autoTp;
 
-  const [autoL2Entry, setAutoL2Entry] = useState('');
-  const [autoL2Tp, setAutoL2Tp] = useState('');
-  const [autoL2Qty, setAutoL2Qty] = useState('');
+    const I11 = (D8 / 9) * 4;
+    const I12 = D8;
 
-  const [entryProfit, setEntryProfit] = useState('');
-  const [L1Profit, setL1Profit] = useState('');
-  const [L2Profit, setL2Profit] = useState('');
-  const [entryProfitPercentage, setEntryProfitPercentage] = useState('');
-  const [L1ProfitPercentage, setL1ProfitPercentage] = useState('');
-  const [L2ProfitPercentage, setL2ProfitPercentage] = useState('');
+    // Quantities
+    const autoQty = D8 / 9;
+    const autoQtyPercentage = E8 / autoEntry * 100;
+    const autoL1Qty = autoQty * 3;
+    const autoL2Qty = autoQty * 5;
 
-  const MANAGE_1 = 4
-  const MANAGE_2 = 6
+    // Take profit levels
+    const autoL1Tp = direction === 'long'
+      ? A11 + ((autoQtyPercentage / 100 / MANAGE_1) * A11)
+      : A11 - ((autoQtyPercentage / 100 / MANAGE_1) * A11);
 
-  const handleSubmit = (e) => {
+    const autoL2Tp = direction === 'long'
+      ? A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12)
+      : A12 - ((autoQtyPercentage / 100 / MANAGE_2) * A12);
+
+    // Margin calculation
+    const margin = ((A12 * I12) / ((accountSize * leverage) * 0.6)) * 100;
+
+    // Profit calculations
+    const calculateProfit = (entry, tp, qty) => {
+      return direction === 'long'
+        ? (tp * qty) - (entry * qty)
+        : (entry * qty) - (tp * qty);
+    };
+
+    const entryProfit = calculateProfit(autoEntry, autoTp, autoQty);
+    const L1Profit = calculateProfit(A11, autoL1Tp, I11);
+    const L2Profit = calculateProfit(A12, autoL2Tp, I12);
+
+    // Profit percentages
+    const entryProfitPercentage = (entryProfit / accountSize) * 100;
+    const L1ProfitPercentage = (L1Profit / accountSize) * 100;
+    const L2ProfitPercentage = (L2Profit / accountSize) * 100;
+
+    return {
+      riskReward,
+      autoEntry: autoEntry.toFixed(2),
+      autoTp: autoTp.toFixed(2),
+      autoSl: autoSl.toFixed(2),
+      autoL1Entry: autoL1Entry.toFixed(2),
+      autoL1Tp: autoL1Tp.toFixed(2),
+      autoL2Entry: autoL2Entry.toFixed(2),
+      autoL2Tp: autoL2Tp.toFixed(2),
+      A11: A11.toFixed(2),
+      A12: A12.toFixed(2),
+      D8: D8.toFixed(2),
+      E8: E8.toFixed(2),
+      I11: I11.toFixed(2),
+      I12: I12.toFixed(2),
+      autoQty: autoQty.toFixed(2),
+      autoQtyPercentage: autoQtyPercentage.toFixed(2),
+      autoL1Qty: autoL1Qty.toFixed(2),
+      autoL2Qty: autoL2Qty.toFixed(2),
+      margin: margin.toFixed(2),
+      entryProfit: entryProfit.toFixed(2),
+      L1Profit: L1Profit.toFixed(2),
+      L2Profit: L2Profit.toFixed(2),
+      entryProfitPercentage: entryProfitPercentage.toFixed(2),
+      L1ProfitPercentage: L1ProfitPercentage.toFixed(2),
+      L2ProfitPercentage: L2ProfitPercentage.toFixed(2)
+    };
+  }, [formData]);
+
+  // Optimized form handler
+  const handleInputChange = useCallback((field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: typeof value === 'number' ? value : value
+    }));
+  }, []);
+
+  // Form submission handler
+  const handleSubmit = useCallback((e) => {
     e?.preventDefault();
-    const newDirection = e?.target?.direction?.value || direction;
-    const newAccountSize = parseFloat(e?.target?.accountSize?.value) || accountSize;
-    const newLeverage = parseFloat(e?.target?.leverage?.value) || leverage;
-    const newRisk = parseFloat(e?.target?.risk?.value) || risk;
-    const newHigh = parseFloat(e?.target?.high?.value) || high;
-    const newLow = parseFloat(e?.target?.low?.value) || low;
+  }, []);
 
-    setDirection(newDirection);
-    setAccountSize(newAccountSize);
-    setLeverage(newLeverage);
-    setRisk(newRisk);
-    setHigh(newHigh);
-    setLow(newLow);
-
-    const newRiskReward = newRisk * newAccountSize / 100;
-    setRiskReward(newRiskReward);
-
-    const newAutoEntry = ((newHigh - newLow) * .618) + newLow;
-    const newAutoTp = (newHigh - newLow) * 1.272 + newLow;
-    const newAutoSl = (newHigh - newLow) * -0.05 + newLow;
-    const newAutoL1Entry = ((newHigh - newLow) * .382) + newLow;
-    const newAutoL2Entry = ((newHigh - newLow) * .17) + newLow;
-
-    setAutoEntry(newAutoEntry.toFixed(2));
-    setAutoTp(newAutoTp.toFixed(2));
-    setAutoSl(newAutoSl.toFixed(2));
-    setAutoL1Entry(newAutoL1Entry.toFixed(2));
-    setAutoL2Entry(newAutoL2Entry.toFixed(2));
-
-    const newA11 = (newAutoEntry + (newAutoL1Entry * 3)) / 4;
-    const newA12 = (newAutoEntry + (newAutoL1Entry * 3) + (newAutoL2Entry * 5)) / 9;
-
-    setA11(newA11.toFixed(2));
-    setA12(newA12);
-
-    const newD8 = newDirection === 'long' ?
-      newRiskReward / (newA12 - newAutoSl) :
-      newRiskReward / (newAutoSl - newA12);
-    const newE8 = newDirection === 'long' ?
-      newAutoTp - newAutoEntry :
-      newAutoEntry - newAutoTp;
-
-    setD8(newD8.toFixed(2));
-    setE8(newE8.toFixed(2));
-
-    const newI11 = (newD8 / 9) * 4;
-    const newI12 = newD8;
-
-    setI11(newI11.toFixed(2));
-    setI12(newI12.toFixed(2));
-
-    const newAutoQty = newD8 / 9;
-    const newAutoQtyPercentage = newE8 / newAutoEntry * 100;
-
-    setAutoQty(newAutoQty.toFixed(2));
-    setAutoQtyPercentage(newAutoQtyPercentage);
-
-    const newAutoL1Qty = newAutoQty * 3;
-    setAutoL1Qty(newAutoL1Qty.toFixed(2));
-    const newAutoL1Tp = newDirection === 'long' ?
-      newA11 + ((newAutoQtyPercentage / 100 / MANAGE_1) * newA11) :
-      newA11 - ((newAutoQtyPercentage / 100 / MANAGE_1) * newA11)
-    setAutoL1Tp(newAutoL1Tp.toFixed(2));
-
-    const newAutoL2Qty = newAutoQty * 5;
-    setAutoL2Qty(newAutoL2Qty.toFixed(2));
-    const newAutoL2Tp = newDirection === 'long' ?
-      newA12 + ((newAutoQtyPercentage / 100 / MANAGE_2) * newA12) :
-      newA12 - ((newAutoQtyPercentage / 100 / MANAGE_2) * newA12)
-    setAutoL2Tp(newAutoL2Tp.toFixed(2));
-
-    const newMargin = ((newA12 * I12) / ((newAccountSize * newLeverage) * 0.6)) * 100;
-    setMargin(newMargin.toFixed(2));
-
-    const entryProfit = newDirection === 'long' ?
-      (newAutoTp * newAutoQty) - (newAutoEntry * newAutoQty) :
-      (newAutoEntry * newAutoQty) - (newAutoTp * newAutoQty)
-    setEntryProfit(entryProfit.toFixed(2));
-
-    const entryProfitPercentage = entryProfit / accountSize * 100;
-    setEntryProfitPercentage(entryProfitPercentage.toFixed(2));
-
-    // =IF(B4="LONG",(E11*I11)-(A11*I11),(A11*I11)-(E11*I11))
-    const L1Profit = newDirection === 'long' ?
-      (newAutoL1Tp * newI11) - (newA11 * newI11) :
-      (newA11 * newI11) - (newAutoL1Tp * newI11)
-    setL1Profit(L1Profit.toFixed(2));
-
-    const L1ProfitPercentage = L1Profit / accountSize * 100;
-    setL1ProfitPercentage(L1ProfitPercentage.toFixed(2));
-    // =IF(B4="LONG",(E12*I12)-(A12*I12),(A12*I12)-(E12*I12))
-    const L2Profit = newDirection === 'long' ?
-      (newAutoL2Tp * newI12) - (newA12 * newI12) :
-      (newA12 * newI12) - (newAutoL2Tp * newI12)
-    setL2Profit(L2Profit.toFixed(2));
-
-    const L2ProfitPercentage = L2Profit / accountSize * 100;
-    setL2ProfitPercentage(L2ProfitPercentage.toFixed(2));
-  }
-
+  // Auto-calculate on form data changes
   useEffect(() => {
-    handleSubmit();
-  }, [direction, accountSize, leverage, risk, high, low]);
+    // Calculations are automatically updated via useMemo
+  }, [formData]);
 
   return (
     <Layout>
       <div className='main'>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className='form-container'>
             <h2>Account</h2>
             <div className='form-element'>
               <input
-                type="text"
+                type="number"
                 name="accountSize"
-                value={accountSize}
-                onChange={(e) => setAccountSize(parseFloat(e.target.value) || 0)}
+                value={formData.accountSize}
+                onChange={(e) => handleInputChange('accountSize', parseFloat(e.target.value) || 0)}
                 placeholder="Account Size"
               />
             </div>
-            <label>
-              <input
-                type="radio"
-                name="direction"
-                value="long"
-                checked={direction === 'long'}
-                onChange={(e) => setDirection(e.target.value)}
-              /> Long
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="direction"
-                value="short"
-                checked={direction === 'short'}
-                onChange={(e) => setDirection(e.target.value)}
-              /> Short
-            </label>
+            <div className='radio-group'>
+              <label>
+                <input
+                  type="radio"
+                  name="direction"
+                  value="long"
+                  checked={formData.direction === 'long'}
+                  onChange={(e) => handleInputChange('direction', e.target.value)}
+                /> Long
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="direction"
+                  value="short"
+                  checked={formData.direction === 'short'}
+                  onChange={(e) => handleInputChange('direction', e.target.value)}
+                /> Short
+              </label>
+            </div>
           </div>
 
           <div className='form-container'>
             <h2>High/Low</h2>
             <div className='form-element'>
               <input
-                type="text"
+                type="number"
+                step="0.01"
                 name="high"
-                value={high}
-                onChange={(e) => setHigh(parseFloat(e.target.value) || 0)}
+                value={formData.high}
+                onChange={(e) => handleInputChange('high', parseFloat(e.target.value) || 0)}
                 placeholder="High"
               />
             </div>
             <div className='form-element'>
               <input
-                type="text"
+                type="number"
+                step="0.01"
                 name="low"
-                value={low}
-                onChange={(e) => setLow(parseFloat(e.target.value) || 0)}
+                value={formData.low}
+                onChange={(e) => handleInputChange('low', parseFloat(e.target.value) || 0)}
                 placeholder="Low"
               />
             </div>
@@ -215,22 +194,22 @@ export default function Home() {
           <div className='form-container'>
             <h2>Risk/Leverage</h2>
             <div className='form-element'>
-              <label>Risk</label>
+              <label>Risk (%)</label>
               <input
-                type="text"
+                type="number"
                 name="risk"
-                value={risk}
-                onChange={(e) => setRisk(parseFloat(e.target.value) || 0)}
+                value={formData.risk}
+                onChange={(e) => handleInputChange('risk', parseFloat(e.target.value) || 0)}
                 placeholder="Risk"
               />
             </div>
             <div className='form-element'>
               <label>Leverage</label>
               <input
-                type="text"
+                type="number"
                 name="leverage"
-                value={leverage}
-                onChange={(e) => setLeverage(parseFloat(e.target.value) || 0)}
+                value={formData.leverage}
+                onChange={(e) => handleInputChange('leverage', parseFloat(e.target.value) || 0)}
                 placeholder="Leverage"
               />
             </div>
@@ -240,94 +219,89 @@ export default function Home() {
         <div>
           <h1>Positions</h1>
           <div className='positions'>
-            <div className='positions-header'>{direction.toUpperCase()}</div>
+            <div className='positions-header'>{formData.direction.toUpperCase()}</div>
             <div className='positions-header'>Price</div>
             <div className='positions-header'>Qty</div>
-            <div className='positions-header' >TP</div>
-            <div className='positions-header' >Profit</div>
-            <div className='positions-header' >Profit %</div>
+            <div className='positions-header'>TP</div>
+            <div className='positions-header'>Profit</div>
+            <div className='positions-header'>Profit %</div>
 
             <div className='positions-title'>Entry</div>
-            <div>{autoEntry}</div>
-            <div>{autoQty}</div>
-            <div>{autoTp}</div>
-            <div>{entryProfit}</div>
-            <div>{entryProfitPercentage}</div>
+            <div>{calculations.autoEntry}</div>
+            <div>{calculations.autoQty}</div>
+            <div>{calculations.autoTp}</div>
+            <div>{calculations.entryProfit}</div>
+            <div>{calculations.entryProfitPercentage}%</div>
 
             <div className='positions-title'>L1</div>
-            <div>{autoL1Entry}</div>
-            <div>{autoL1Qty}</div>
-            <div>{autoL1Tp}</div>
-            <div>{L1Profit}</div>
-            <div>{L1ProfitPercentage}</div>
+            <div>{calculations.autoL1Entry}</div>
+            <div>{calculations.autoL1Qty}</div>
+            <div>{calculations.autoL1Tp}</div>
+            <div>{calculations.L1Profit}</div>
+            <div>{calculations.L1ProfitPercentage}%</div>
 
             <div className='positions-title'>L2</div>
-            <div>{autoL2Entry}</div>
-            <div>{autoL2Qty}</div>
-            <div>{autoL2Tp}</div>
-            <div>{L2Profit}</div>
-            <div>{L2ProfitPercentage}</div>
+            <div>{calculations.autoL2Entry}</div>
+            <div>{calculations.autoL2Qty}</div>
+            <div>{calculations.autoL2Tp}</div>
+            <div>{calculations.L2Profit}</div>
+            <div>{calculations.L2ProfitPercentage}%</div>
 
             <div className='positions-title'>SL</div>
-            <div>{autoSl}</div>
-            <div>{D8}</div>
+            <div>{calculations.autoSl}</div>
+            <div>{calculations.D8}</div>
             <div></div>
-            <div>{-riskReward}</div>
-            <div>{-risk}</div>
+            <div>{-calculations.riskReward}</div>
+            <div>{-formData.risk}%</div>
 
             <div className='positions-title'>Leverage</div>
-            <div>{leverage}</div>
+            <div>{formData.leverage}</div>
             <div className='positions-title'>Margin</div>
-            <div>{margin}</div>
+            <div>{calculations.margin}%</div>
             <div className='positions-title'>Account</div>
-            <div>{accountSize}</div>
+            <div>{formData.accountSize}</div>
           </div>
 
           <hr />
 
-          <img src={image.src} alt="image" />
-          <img src={image2.src} alt="image2" />
+          <img src={image.src} alt="Trading chart 1" />
+          <img src={image2.src} alt="Trading chart 2" />
 
           <h1>Debug</h1>
           <h2>Results</h2>
 
           <h2>High/Low auto calculator</h2>
-          <p>High: <span id="high">{high}</span></p>
-          <p>Low: <span id="low">{low}</span></p>
+          <p>High: <span id="high">{formData.high}</span></p>
+          <p>Low: <span id="low">{formData.low}</span></p>
           <hr />
-          <p>auto entry : {autoEntry}</p>
-          <p>auto tp : {autoTp}</p>
-          <p>auto sl : {autoSl}</p>
-          <p>Qty : {autoQty}</p>
-          <p>Qty Percentage : {autoQtyPercentage}</p>
+          <p>auto entry: {calculations.autoEntry}</p>
+          <p>auto tp: {calculations.autoTp}</p>
+          <p>auto sl: {calculations.autoSl}</p>
+          <p>Qty: {calculations.autoQty}</p>
+          <p>Qty Percentage: {calculations.autoQtyPercentage}%</p>
           <hr />
-          <p>auto l1 entry : {autoL1Entry}</p>
-          <p>auto l1 tp : {autoL1Tp}</p>
-          <p>auto l1 qty : {autoL1Qty}</p>
+          <p>auto l1 entry: {calculations.autoL1Entry}</p>
+          <p>auto l1 tp: {calculations.autoL1Tp}</p>
+          <p>auto l1 qty: {calculations.autoL1Qty}</p>
           <hr />
-          <p>auto l2 entry : {autoL2Entry}</p>
-          <p>auto l2 tp : {autoL2Tp}</p>
-          <p>auto l2 qty : {autoL2Qty}</p>
+          <p>auto l2 entry: {calculations.autoL2Entry}</p>
+          <p>auto l2 tp: {calculations.autoL2Tp}</p>
+          <p>auto l2 qty: {calculations.autoL2Qty}</p>
           <hr />
-          <p>Direction: <span id="direction">{direction}</span></p>
-          <p>Account Size: <span id="accountSize">{accountSize}</span></p>
-          <p>Risk: <span id="risk">{risk}</span></p>
-          <p>Risk Reward: <span id="riskReward">{riskReward}</span></p>
-          <p>Leverage: <span id="leverage">{leverage}</span></p>
-          <hr />
-
-
+          <p>Direction: <span id="direction">{formData.direction}</span></p>
+          <p>Account Size: <span id="accountSize">{formData.accountSize}</span></p>
+          <p>Risk: <span id="risk">{formData.risk}</span></p>
+          <p>Risk Reward: <span id="riskReward">{calculations.riskReward}</span></p>
+          <p>Leverage: <span id="leverage">{formData.leverage}</span></p>
           <hr />
 
           <div>
-            A11 :  {A11} <br />
-            A12 : {A12} <br />
-
-            D8 : {D8} <br />
-            E8 : {E8} <br />
-
-            I11 : {I11} <br />
-            I12 : {I12} <br />
+            A11: {calculations.A11} <br />
+            A12: {calculations.A12} <br />
+            D8: {calculations.D8} <br />
+            E8: {calculations.E8} <br />
+            I11: {calculations.I11} <br />
+            I12: {calculations.I12} <br />
           </div>
         </div>
       </div>
