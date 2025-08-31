@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import CopyButton from '../components/copyButton';
 import Layout from '../components/Layout';
 import image from "../public/image.png";
 import image2 from "../public/image2.png";
@@ -276,28 +277,28 @@ export default function Home() {
             <div className='positions-header'>Profit %</div>
 
             <div className='positions-title'>Entry</div>
-            <div>{calculations.autoEntry}</div>
-            <div>{calculations.autoQty}</div>
-            <div>{calculations.autoTp}</div>
+            <div>{calculations.autoEntry} <CopyButton value={calculations.autoEntry} /></div>
+            <div>{calculations.autoQty} <CopyButton value={calculations.autoQty} /></div>
+            <div>{calculations.autoTp} <CopyButton value={calculations.autoTp} /></div>
             <div>{calculations.entryProfit}</div>
             <div>{calculations.entryProfitPercentage}%</div>
 
             <div className='positions-title'>L1</div>
-            <div>{calculations.autoL1Entry}</div>
-            <div>{calculations.autoL1Qty}</div>
-            <div>{calculations.autoL1Tp}</div>
+            <div>{calculations.autoL1Entry} <CopyButton value={calculations.autoL1Entry} /></div>
+            <div>{calculations.autoL1Qty} <CopyButton value={calculations.autoL1Qty} /></div>
+            <div>{calculations.autoL1Tp} <CopyButton value={calculations.autoL1Tp} /></div>
             <div>{calculations.L1Profit}</div>
             <div>{calculations.L1ProfitPercentage}%</div>
 
             <div className='positions-title'>L2</div>
-            <div>{calculations.autoL2Entry}</div>
-            <div>{calculations.autoL2Qty}</div>
-            <div>{calculations.autoL2Tp}</div>
+            <div>{calculations.autoL2Entry} <CopyButton value={calculations.autoL2Entry} /></div>
+            <div>{calculations.autoL2Qty} <CopyButton value={calculations.autoL2Qty} /></div>
+            <div>{calculations.autoL2Tp} <CopyButton value={calculations.autoL2Tp} /></div>
             <div>{calculations.L2Profit}</div>
             <div>{calculations.L2ProfitPercentage}%</div>
 
             <div className='positions-title'>SL</div>
-            <div>{calculations.autoSl}</div>
+            <div>{calculations.autoSl} <CopyButton value={calculations.autoSl} /></div>
             <div>{calculations.D8}</div>
             <div></div>
             <div>{-calculations.riskReward}</div>
