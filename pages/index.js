@@ -3,7 +3,7 @@ import Layout from '../components/Layout';
 import image from "../public/image.png";
 import image2 from "../public/image2.png";
 
- const normalizeNumber = (value) => {
+const normalizeNumber = (value) => {
   // Étape 1 : Multiplier par 100000 (décalage décimal)
   let result = value * 100000;
   result = Math.round(result);
@@ -19,7 +19,7 @@ import image2 from "../public/image2.png";
   result = result / 10;
   // Étape 7 : Arrondir à l'entier le plus proche
   result = Math.round(result);
-  
+
   result = result / 100;
   return result;
 };
@@ -32,16 +32,18 @@ export default function Home() {
     risk: 50,
     leverage: 50,
     high: 203.93,
-    low: 200.45
+    low: 200.45,
+    manage1: 4,
+    manage2: 7.3
   });
 
   // Constants
-  const MANAGE_1 = 4;
-  const MANAGE_2 = 6;
+  const MANAGE_1 = formData.manage1;
+  const MANAGE_2 = formData.manage2;
 
   // Memoized calculations
   const calculations = useMemo(() => {
-    const { direction, accountSize, risk, leverage, high, low } = formData;
+    const { direction, accountSize, risk, leverage, high, low, manage1, manage2 } = formData;
 
     const riskReward = risk * accountSize / 100;
     const range = high - low;
@@ -64,7 +66,7 @@ export default function Home() {
       ? riskReward / normalizeNumber(A12 - autoSl)
       : riskReward / (autoSl - A12);
 
- 
+
     const E8 = direction === 'long'
       ? autoTp - autoEntry
       : autoEntry - autoTp;
@@ -78,18 +80,18 @@ export default function Home() {
     const autoL1Qty = autoQty * 3;
     const autoL2Qty = autoQty * 5;
 
-    console.log('autoQtyPercentage ==> ', E8 / autoEntry * 100,normalizeNumber(E8 / autoEntry * 100))
+    console.log('autoQtyPercentage ==> ', E8 / autoEntry * 100, normalizeNumber(E8 / autoEntry * 100))
 
     // Take profit levels
     const autoL1Tp = direction === 'long'
-      ? A11 + ((autoQtyPercentage / 100 / MANAGE_1) * A11)
-      : A11 - ((autoQtyPercentage / 100 / MANAGE_1) * A11);
+      ? A11 + ((autoQtyPercentage / 100 / manage1) * A11)
+      : A11 - ((autoQtyPercentage / 100 / manage1) * A11);
 
     const autoL2Tp = direction === 'long'
-      ? A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12)
-      : A12 - ((autoQtyPercentage / 100 / MANAGE_2) * A12);
+      ? A12 + ((autoQtyPercentage / 100 / manage2) * A12)
+      : A12 - ((autoQtyPercentage / 100 / manage2) * A12);
 
-console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPercentage / 100 / MANAGE_2) * A12))
+    console.log('autoL2Tp ==> ', A12, autoQtyPercentage, manage2, A12 + ((autoQtyPercentage / 100 / manage2) * A12))
     // Margin calculation
     const margin = ((A12 * I12) / ((accountSize * leverage) * 0.6)) * 100;
 
@@ -241,6 +243,26 @@ console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPe
               />
             </div>
           </div>
+
+          <div className='form-container'>
+            <h2>Manage</h2>
+            <div className='form-element'>
+              <input
+                type="number"
+                name="manage1"
+                value={formData.manage1}
+                onChange={(e) => handleInputChange('manage1', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div className='form-element'>
+              <input
+                type="number"
+                name="manage2"
+                value={formData.manage2}
+                onChange={(e) => handleInputChange('manage2', parseFloat(e.target.value) || 0)}
+              />
+            </div>
+          </div>
         </form>
 
         <div>
@@ -320,6 +342,8 @@ console.log('autoL2Tp ==> ', A12, autoQtyPercentage, MANAGE_2, A12 + ((autoQtyPe
           <p>Risk: <span id="risk">{formData.risk}</span></p>
           <p>Risk Reward: <span id="riskReward">{calculations.riskReward}</span></p>
           <p>Leverage: <span id="leverage">{formData.leverage}</span></p>
+          <p>Manage 1: <span id="manage1">{formData.manage1}</span></p>
+          <p>Manage 2: <span id="manage2">{formData.manage2}</span></p>
           <hr />
 
           <div>
