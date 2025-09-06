@@ -2,20 +2,32 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>TCL Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TCL Calculator - Extension Chrome</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h2>TCL Calculator</h2>
+    <div class="app-container">
+      <header class="app-header">
+        <h1>📊 TCL Calculator</h1>
+        <p class="app-subtitle">Calculateur de Trading avec Gestion des Risques</p>
+      </header>
 
-    <div id="inputs-container"></div>
+      <main class="app-main">
+        <div class="form-container" id="form-container">
+          <!-- Le contenu du formulaire sera généré dynamiquement -->
+        </div>
 
-    <button id="addRow">➕ Ajouter une ligne</button>
-    <button id="calculate">⚡ Calculer</button>
+        <div class="results-container" id="results-container">
+          <!-- Le contenu des résultats sera généré dynamiquement -->
+        </div>
+      </main>
 
-    <h3>Résultats</h3>
-    <table id="results"></table>
+      <footer class="app-footer">
+        <p>Extension Chrome TCL Calculator v1.0.0</p>
+      </footer>
+    </div>
 
-    <script src="index.js"></script>
+    <script type="module" src="index.js"></script>
   </body>
 </html>
