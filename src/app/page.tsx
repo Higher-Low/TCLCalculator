@@ -39,10 +39,6 @@ export default function Home() {
     manage2: 7.3,
   })
 
-  // Constants
-  const MANAGE_1 = formData.manage1
-  const MANAGE_2 = formData.manage2
-
   // Memoized calculations
   const calculations = useMemo(() => {
     const { direction, accountSize, risk, leverage, high, low, manage1, manage2 } = formData

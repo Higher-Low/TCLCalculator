@@ -1,10 +1,7 @@
-import { useState } from "react"
+import { useState } from 'react'
 
 export default function CopyButton({ value }) {
   const [copied, setCopied] = useState(false)
-
-
-  console.log('value ==> ', value)
 
   const handleCopy = async () => {
     try {
@@ -12,13 +9,13 @@ export default function CopyButton({ value }) {
       setCopied(true)
       // setTimeout(() => setCopied(false), 2000); // reset après 2s
     } catch (err) {
-      console.error("Erreur de copie : ", err)
+      console.error('Erreur de copie : ', err)
     }
   }
 
   return (
-    <button className="copy-button" onClick={handleCopy}>
-      {copied ? "✅" : "📋"}
+    <button className='copy-button' onClick={handleCopy}>
+      {copied ? '✅' : '📋'}
     </button>
   )
 }
