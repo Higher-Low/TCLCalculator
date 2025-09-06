@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "TCL Calculator",
+  "version": "1.0.0",
+  "description": "Calculateur avec panneau latéral persistant",
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "action": {},
+  "background": {
+    "service_worker": "extension.js"
+  },
+  "permissions": ["sidePanel", "storage", "clipboardWrite"]
+}
