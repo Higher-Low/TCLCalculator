@@ -404,10 +404,10 @@ class UIController {
       accountSize: 1000,
       risk: 50,
       leverage: 50,
-      high: 203.93,
-      low: 200.45,
+      high: 0,
+      low: 0,
       manage1: 4,
-      manage2: 7.3,
+      manage2: 6,
     }
     this.createForm()
     this.bindEvents()
